@@ -99,12 +99,13 @@ def get_cars(request):
 # a list of dealerships
 #Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 def get_dealerships(request, state="All"):
-    if(state == "All"):
+    if state == "All":
         endpoint = "/fetchDealers"
     else:
-        endpoint = "/fetchDealers/"+state
-    dealerships = get_request(endpoint)
-    return JsonResponse({"status":200,"dealers":dealerships})
+        endpoint = f"/fetchDealers/{state}"
+    
+    dealerships = get_request(endpoint)  # Call your API function
+    return JsonResponse({"status": 200, "dealers": dealerships})
 
 # Fetch dealer details based on dealer_id
 def get_dealer_details(request, dealer_id):
@@ -116,13 +117,19 @@ def get_dealer_details(request, dealer_id):
         return JsonResponse({"status": 400, "message": "Bad Request"})
 
 # Fetch dealer reviews based on dealer_id
+# Fetch dealer reviews based on dealer_id
 def get_dealer_reviews(request, dealer_id):
     if dealer_id:
         endpoint = "/fetchReviews/dealer/" + str(dealer_id)
         reviews = get_request(endpoint)
+        
         for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail['review'])
-            review_detail['sentiment'] = response['sentiment']
+            response = analyze_review_sentiments(review_detail.get('review', ''))  # Using .get() to ensure review exists
+            if response and 'sentiment' in response:
+                review_detail['sentiment'] = response['sentiment']
+            else:
+                review_detail['sentiment'] = "Unknown"  # Fallback in case of missing sentiment analysis
+        
         return JsonResponse({"status": 200, "reviews": reviews})
     else:
         return JsonResponse({"status": 400, "message": "Bad Request"})
