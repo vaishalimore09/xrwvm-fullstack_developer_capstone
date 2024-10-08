@@ -1,0 +1,10 @@
+{
+    "esversion": 8,  // Set this to 8 to support async functions
+    "mocha": true,   // If you are using Mocha for testing (optional)
+    "node": true,    // Specify that this code is meant to run in Node.js
+    "globals": {
+      "require": true,
+      "module": true
+    }
+  }
+  
