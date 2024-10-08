@@ -24,17 +24,26 @@ const Dealer = () => {
   let reviews_url = root_url+`djangoapp/reviews/dealer/${id}`;
   let post_review = root_url+`postreview/${id}`;
   
-  const get_dealer = async ()=>{
-    const res = await fetch(dealer_url, {
-      method: "GET"
-    });
-    const retobj = await res.json();
-    
-    if(retobj.status === 200) {
-      let dealerobjs = Array.from(retobj.dealer)
-      setDealer(dealerobjs[0])
-    }
-  }
+  const get_dealer = async () => {
+        try {
+            console.log("Fetching dealer from URL:", dealer_url); // Check the URL
+            const res = await fetch(dealer_url, {
+            method: "GET"
+            });
+            const retobj = await res.json();
+            
+            console.log("Response from API:", retobj); // Log the response
+
+            if (retobj.status === 200) {
+            console.log("Setting dealer:", retobj.dealer); // Log before setting dealer
+            setDealer(retobj.dealer); // Set the dealer object correctly
+            } else {
+            console.error("Failed to fetch dealer, status:", res.status); // If status is not 200
+            }
+        } catch (error) {
+            console.error("Error fetching dealer data:", error);
+        }
+        };
 
   const get_reviews = async ()=>{
     const res = await fetch(reviews_url, {
@@ -57,37 +66,47 @@ const Dealer = () => {
   }
 
   useEffect(() => {
-    get_dealer();
-    get_reviews();
-    if(sessionStorage.getItem("username")) {
-      setPostReview(<a href={post_review}><img src={review_icon} style={{width:'10%',marginLeft:'10px',marginTop:'10px'}} alt='Post Review'/></a>)
+  get_dealer();
+  get_reviews();
+  if(sessionStorage.getItem("username")) {
+    setPostReview(<a href={post_review}><img src={review_icon} style={{width:'10%',marginLeft:'10px',marginTop:'10px'}} alt='Post Review'/></a>)
+  }
+},[]);
 
-      
-    }
-  },[]);  
+useEffect(() => {
+  console.log("-------", dealer); // Check the dealer object after setting it
+}, [dealer]);
+ 
 
 
-return(
-  <div style={{margin:"20px"}}>
-      <Header/>
-      <div style={{marginTop:"10px"}}>
-      <h1 style={{color:"grey"}}>{dealer.full_name}{postReview}</h1>
-      <h4  style={{color:"grey"}}>{dealer['city']},{dealer['address']}, Zip - {dealer['zip']}, {dealer['state']} </h4>
-      </div>
-      <div class="reviews_panel">
-      {reviews.length === 0 && unreviewed === false ? (
-        <text>Loading Reviews....</text>
-      ):  unreviewed === true? <div>No reviews yet! </div> :
-      reviews.map(review => (
-        <div className='review_panel'>
-          <img src={senti_icon(review.sentiment)} className="emotion_icon" alt='Sentiment'/>
-          <div className='review'>{review.review}</div>
-          <div className="reviewer">{review.name} {review.car_make} {review.car_model} {review.car_year}</div>
+  return(
+    <div style={{margin:"20px"}}>
+        <Header/>
+        <div style={{marginTop:"10px"}}>
+        {dealer && dealer.full_name ? (
+          <>
+            <h1 style={{color:"grey"}}>{dealer.full_name}{postReview}</h1>
+            <h4  style={{color:"grey"}}>{dealer.city},{dealer.address}, Zip - {dealer.zip}, {dealer.state} </h4>
+          </>
+        ) : (
+          <h1>Loading dealer information...</h1>
+        )}
         </div>
-      ))}
-    </div>  
-  </div>
-)
+        <div className="reviews_panel">
+        {reviews.length === 0 && unreviewed === false ? (
+          <text>Loading Reviews....</text>
+        ):  unreviewed === true ? <div>No reviews yet! </div> :
+        reviews.map(review => (
+          <div className='review_panel' key={review.id}>
+            <img src={senti_icon(review.sentiment)} className="emotion_icon" alt='Sentiment'/>
+            <div className='review'>{review.review}</div>
+            <div className="reviewer">{review.name} {review.car_make} {review.car_model} {review.car_year}</div>
+          </div>
+        ))}
+      </div>  
+    </div>
+  )
+  
 }
 
 export default Dealer

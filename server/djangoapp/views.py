@@ -94,7 +94,14 @@ def get_cars(request):
     for car_model in car_models:
         cars.append({"CarModel": car_model.name, "CarMake": car_model.car_make.name})
     return JsonResponse({"CarModels":cars})
-    
+
+# def get_cars(request, id):
+#     # Fetch cars related to the dealer ID
+#     cars = CarModel.objects.filter(dealer_id=id)  # Adjust this based on your models
+#     car_data = [{"id": car.id, "name": car.name} for car in cars]  # Customize the data structure as needed
+#     return JsonResponse({"status": 200, "cars": car_data})
+
+
 # # Update the `get_dealerships` view to render the index page with
 # a list of dealerships
 #Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
@@ -134,6 +141,7 @@ def get_dealer_reviews(request, dealer_id):
     else:
         return JsonResponse({"status": 400, "message": "Bad Request"})
 
+@csrf_exempt
 def add_review(request):
     if(request.user.is_anonymous == False):
         data = json.loads(request.body)

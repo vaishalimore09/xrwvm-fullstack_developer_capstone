@@ -1,8 +1,8 @@
 # Uncomment the following imports before adding the Model code
 
-# from django.db import models
-# from django.utils.timezone import now
-# from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils.timezone import now
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 # Create your models here.
@@ -27,18 +27,15 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-# CarMake model
 class CarMake(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-
-    # You can add more fields if needed
-
+    # Other fields as needed
     def __str__(self):
-        return self.name  # Return the name for string representation
+        return self.name  # Return the name as the string representation
 
+# <HINT> Create a Car Model model `class CarModel(models.Model):`:
 
-# CarModel model
 class CarModel(models.Model):
     car_make = models.ForeignKey(CarMake, on_delete=models.CASCADE)  # Many-to-One relationship
     name = models.CharField(max_length=100)
@@ -46,14 +43,62 @@ class CarModel(models.Model):
         ('SEDAN', 'Sedan'),
         ('SUV', 'SUV'),
         ('WAGON', 'Wagon'),
-        # Add more types if required
+        # Add more choices as required
     ]
     type = models.CharField(max_length=10, choices=CAR_TYPES, default='SUV')
     year = models.IntegerField(default=2023,
-        validators=[MaxValueValidator(2023), MinValueValidator(2015)])
-
-    # You can add more fields as needed
+        validators=[
+            MaxValueValidator(2023),
+            MinValueValidator(2015)
+        ])
+    # Other fields as needed
 
     def __str__(self):
-        return f"{self.car_make.name} {self.name}"  # Return the car make and model
+        return self.name  # Return the name as the string representation
 
+# All fields are from dealerships document in cloudant
+class CarDealer:
+
+    def __init__(self, address, city, full_name, id, lat, long, short_name, st, zip):
+        # Dealer address
+        self.address = address
+        # Dealer city
+        self.city = city
+        # Dealer Full Name
+        self.full_name = full_name
+        # Dealer id
+        self.id = id
+        # Location lat
+        self.lat = lat
+        # Location long
+        self.long = long
+        # Dealer short name
+        self.short_name = short_name
+        # Dealer state
+        self.st = st
+        # Dealer zip
+        self.zip = zip
+
+    def __str__(self):
+        return "Dealer name: " + self.full_name
+
+
+# <HINT> Create a plain Python class `DealerReview` to hold review data
+
+# All fields are from review documet in cloudant
+class DealerReview:
+
+    def __init__(self, id, name, dealership, review, purchase, purchase_date, car_make, car_model, car_year, sentiment='neutral'):
+        self.id = id
+        self.name = name  # reviewer name
+        self.dealership = dealership
+        self.review = review  # reveiw text
+        self.purchase = purchase  # Did the reviewer purchase the car? bool
+        self.purchase_date = purchase_date
+        self.car_make = car_make
+        self.car_model = car_model
+        self.car_year = car_year
+        self.sentiment = sentiment  # Watson NLU sentiment analysis of review
+
+        def __str__(self):
+            return 'Reviewer: ' + self.name + ' Review: ' + self.review
