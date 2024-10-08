@@ -33,6 +33,14 @@ REST_FRAMEWORK = {
 }
 
 # Application definition
+'''ALLOWED_HOSTS = ['localhost','https://vaishalimore-8000.
+theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai']
+CSRF_TRUSTED_ORIGINS = ['https://vaishalimore-8000.theiadockernext-1-
+labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai']
+
+{'NAME':
+'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+ },'''
 
 INSTALLED_APPS = [
     'djangoapp.apps.DjangoappConfig',
