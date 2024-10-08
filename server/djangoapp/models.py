@@ -37,9 +37,9 @@ class CarModel(models.Model):
 
 
 class CarDealer:
-    def __init__(self, address, 
-                 city, full_name, 
-                 id, lat, long, 
+    def __init__(self, address,
+                 city, full_name,
+                 id, lat, long,
                  short_name, st, zip):
         self.address = address
         self.city = city
@@ -56,10 +56,10 @@ class CarDealer:
 
 
 class DealerReview:
-    def __init__(self, id, name, 
-                 dealership, review, 
-                 purchase, purchase_date, 
-                 car_make, car_model, 
+    def __init__(self, id, name,
+                 dealership, review,
+                 purchase, purchase_date,
+                 car_make, car_model,
                  car_year, sentiment='neutral'):
         self.id = id
         self.name = name  # reviewer name

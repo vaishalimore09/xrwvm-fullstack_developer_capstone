@@ -1,12 +1,8 @@
 # Uncomment the required imports before adding the code
 
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import logout
-from django.contrib import messages
-from datetime import datetime
 from .restapis import get_request, analyze_review_sentiments, post_review
 
 
@@ -41,10 +37,11 @@ def login_user(request):
         data = {"userName": username, "status": "Authenticated"}
     return JsonResponse(data)
 
+
 # Create a `logout_request` view to handle sign out request
 def logout_request(request):
     logout(request)
-    
+
     # Send a JSON response back with an empty username
     data = {"userName": ""}
     return JsonResponse(data)
@@ -53,8 +50,6 @@ def logout_request(request):
 # Create a `registration` view to handle sign up request
 @csrf_exempt
 def registration(request):
-    context = {}
-
     data = json.loads(request.body)
     username = data['userName']
     password = data['password']
@@ -62,57 +57,53 @@ def registration(request):
     last_name = data['lastName']
     email = data['email']
     username_exist = False
-    email_exist = False
     try:
         # Check if user already exists
         User.objects.get(username=username)
         username_exist = True
-    except:
+    except User.DoesNotExist:
         # If not, simply log this is a new user
         logger.debug("{} is new user".format(username))
 
     # If it is a new user
     if not username_exist:
         # Create user in auth_user table
-        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name,password=password, email=email)
+        user = User.objects.create_user(username=username,
+                                        first_name=first_name,
+                                        last_name=last_name,
+                                        password=password,
+                                        email=email)
         # Login the user and redirect to list page
         login(request, user)
-        data = {"userName":username,"status":"Authenticated"}
+        data = {"userName": username, "status": "Authenticated"}
         return JsonResponse(data)
-    else :
-        data = {"userName":username,"error":"Already Registered"}
+    else:
+        data = {"userName": username, "error": "Already Registered"}
         return JsonResponse(data)
 
 
 def get_cars(request):
     count = CarMake.objects.filter().count()
     print(count)
-    if(count == 0):
+    if (count == 0):
         initiate()
     car_models = CarModel.objects.select_related('car_make')
     cars = []
     for car_model in car_models:
-        cars.append({"CarModel": car_model.name, "CarMake": car_model.car_make.name})
-    return JsonResponse({"CarModels":cars})
-
-# def get_cars(request, id):
-#     # Fetch cars related to the dealer ID
-#     cars = CarModel.objects.filter(dealer_id=id)  # Adjust this based on your models
-#     car_data = [{"id": car.id, "name": car.name} for car in cars]  # Customize the data structure as needed
-#     return JsonResponse({"status": 200, "cars": car_data})
+        cars.append({"CarModel": car_model.name,
+                     "CarMake": car_model.car_make.name})
+    return JsonResponse({"CarModels": cars})
 
 
-# # Update the `get_dealerships` view to render the index page with
-# a list of dealerships
-#Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 def get_dealerships(request, state="All"):
     if state == "All":
         endpoint = "/fetchDealers"
     else:
         endpoint = f"/fetchDealers/{state}"
-    
+
     dealerships = get_request(endpoint)  # Call your API function
     return JsonResponse({"status": 200, "dealers": dealerships})
+
 
 # Fetch dealer details based on dealer_id
 def get_dealer_details(request, dealer_id):
@@ -123,32 +114,37 @@ def get_dealer_details(request, dealer_id):
     else:
         return JsonResponse({"status": 400, "message": "Bad Request"})
 
+
 # Fetch dealer reviews based on dealer_id
 # Fetch dealer reviews based on dealer_id
 def get_dealer_reviews(request, dealer_id):
     if dealer_id:
         endpoint = "/fetchReviews/dealer/" + str(dealer_id)
         reviews = get_request(endpoint)
-        
+
         for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail.get('review', ''))  # Using .get() to ensure review exists
+            response = analyze_review_sentiments(
+                review_detail.get('review', ''))
             if response and 'sentiment' in response:
                 review_detail['sentiment'] = response['sentiment']
             else:
-                review_detail['sentiment'] = "Unknown"  # Fallback in case of missing sentiment analysis
-        
+                review_detail['sentiment'] = "Unknown"
+
         return JsonResponse({"status": 200, "reviews": reviews})
     else:
         return JsonResponse({"status": 400, "message": "Bad Request"})
 
+
 @csrf_exempt
 def add_review(request):
-    if(request.user.is_anonymous == False):
+    if not request.user.is_anonymous:
         data = json.loads(request.body)
         try:
             response = post_review(data)
-            return JsonResponse({"status":200})
-        except:
-            return JsonResponse({"status":401,"message":"Error in posting review"})
+            print(response)
+            return JsonResponse({"status": 200})
+        except Exception as e:
+            return JsonResponse({"status": 401,
+                                 "message": "Error in posting review"})
     else:
-        return JsonResponse({"status":403,"message":"Unauthorized"})
+        return JsonResponse({"status": 403, "message": "Unauthorized"})
